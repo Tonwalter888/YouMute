@@ -29,8 +29,7 @@ static BOOL isMutedBottom(YTInlinePlayerBarContainerView *self) {
 }
 
 static UIImage *muteImage(BOOL muted) {
-    BOOL icon = muted || isMuteEnabled;
-    return [%c(QTMIcon) imageWithName:icon ? @"ic_volume_off" : @"ic_volume_up" color:[%c(YTColor) white1]];
+    return [%c(QTMIcon) imageWithName:muted ? @"ic_volume_off" : @"ic_volume_up" color:[%c(YTColor) white1]];
 }
 
 %hook YTSingleVideoController
@@ -40,9 +39,9 @@ static UIImage *muteImage(BOOL muted) {
     %orig;
 }
 
-- (void)setVideo:(id)video {
+- (void)setPlayerItem:(MLHAMPlayerItem *)item {
     %orig;
-    if (isMuteEnabled) {
+    if (isMuteEnabled && ![self isMuted]) {
         [self setMuted:YES];
     }
 }
