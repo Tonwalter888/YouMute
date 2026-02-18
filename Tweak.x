@@ -15,6 +15,8 @@
 - (void)didPressMute:(id)arg;
 @end
 
+static BOOL isMuteEnabled = NO;
+
 static BOOL isMutedTop(YTMainAppControlsOverlayView *self) {
     YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
     YTSingleVideoController *video = [c valueForKey:@"_currentSingleVideoObservable"];
@@ -27,8 +29,25 @@ static BOOL isMutedBottom(YTInlinePlayerBarContainerView *self) {
 }
 
 static UIImage *muteImage(BOOL muted) {
-    return [%c(QTMIcon) imageWithName:muted ? @"ic_volume_off" : @"ic_volume_up" color:[%c(YTColor) white1]];
+    BOOL icon = muted || isMuteEnabled;
+    return [%c(QTMIcon) imageWithName:icon ? @"ic_volume_off" : @"ic_volume_up" color:[%c(YTColor) white1]];
 }
+
+%hook YTSingleVideoController
+
+- (void)setMuted:(BOOL)muted {
+    isMuteEnabled = muted;
+    %orig;
+}
+
+- (void)setVideo:(id)video {
+    %orig;
+    if (isMuteEnabled) {
+        [self setMuted:YES];
+    }
+}
+
+%end
 
 %group Top
 
