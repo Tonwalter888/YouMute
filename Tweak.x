@@ -32,6 +32,8 @@ static UIImage *muteImage(BOOL muted) {
     return [%c(QTMIcon) imageWithName:muted ? @"ic_volume_off" : @"ic_volume_up" color:[%c(YTColor) white1]];
 }
 
+%group Main
+
 %hook YTSingleVideoController
 
 - (void)setMuted:(BOOL)muted {
@@ -45,6 +47,8 @@ static UIImage *muteImage(BOOL muted) {
         [self setMuted:YES];
     }
 }
+
+%end
 
 %end
 
@@ -93,6 +97,7 @@ static UIImage *muteImage(BOOL muted) {
         SelectorKey: @"didPressMute:",
         UpdateImageOnVisibleKey: @YES
     });
+    %init(Main);
     %init(Top);
     %init(Bottom);
 }
