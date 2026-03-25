@@ -26,7 +26,6 @@ static BOOL isMutedBottom(YTInlinePlayerBarContainerView *self) {
     return [video isMuted];
 }
 
-
 static BOOL muteButtonState() {
     [[NSUserDefaults standardUserDefaults] synchronize];
     return [[NSUserDefaults standardUserDefaults] boolForKey:@"YouMuteState"];
@@ -46,7 +45,8 @@ static UIImage *muteImage(BOOL muted) {
 %hook YTSingleVideoController
 
 - (void)setMuted:(BOOL)muted {
-    %orig(muteButtonState() ? YES : muted);
+    setMuteButtonState(muted);
+    %orig(muted);
 }
 
 %end
