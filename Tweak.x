@@ -6,6 +6,7 @@
 #import <YouTubeHeader/YTSingleVideoController.h>
 
 #define TweakKey @"YouMute"
+#define YouMuteState @"GlobalMuteState"
 
 @interface YTMainAppControlsOverlayView (YouMute)
 - (void)didPressMute:(id)arg;
@@ -26,9 +27,33 @@ static BOOL isMutedBottom(YTInlinePlayerBarContainerView *self) {
     return [video isMuted];
 }
 
+static BOOL muteButtonState() {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"YouMuteState"];
+}
+
+static void setMuteButtonState(BOOL state) {
+    [[NSUserDefaults standardUserDefaults] setBool:state forKey:@"YouMuteState"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+}
+
 static UIImage *muteImage(BOOL muted) {
     return [%c(QTMIcon) imageWithName:muted ? @"ic_volume_off" : @"ic_volume_up" color:[%c(YTColor) white1]];
 }
+
+%group Mute
+
+%hook YTSingleVideoController
+
+- (void)setMuted:(BOOL)muted {
+    %orig;
+    if (muteButtonState()) {
+        [self setMuted:YES]
+    }
+}
+
+%end
+
+%end
 
 %group Top
 
@@ -42,8 +67,10 @@ static UIImage *muteImage(BOOL muted) {
 - (void)didPressMute:(id)arg {
     YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
     YTSingleVideoController *video = [c valueForKey:@"_currentSingleVideoObservable"];
-    [video setMuted:![video isMuted]];
-    [self.overlayButtons[TweakKey] setImage:muteImage([video isMuted]) forState:UIControlStateNormal];
+    BOOL setMuteState = ![video isMuted];
+    [video setMuted:setMuteState];
+    setMuteButtonState(setMuteState);
+    [self.overlayButtons[TweakKey] setImage:muteImage(setMuteState) forState:UIControlStateNormal];
 }
 
 %end
@@ -61,8 +88,10 @@ static UIImage *muteImage(BOOL muted) {
 %new(v@:@)
 - (void)didPressMute:(id)arg {
     YTSingleVideoController *video = [self.delegate valueForKey:@"_currentSingleVideo"];
-    [video setMuted:![video isMuted]];
-    [self.overlayButtons[TweakKey] setImage:muteImage([video isMuted]) forState:UIControlStateNormal];
+    BOOL setMuteState = ![video isMuted];
+    [video setMuted:setMuteState];
+    setMuteButtonState(setMuteState);
+    [self.overlayButtons[TweakKey] setImage:muteImage(setMuteState) forState:UIControlStateNormal];
 }
 
 %end
@@ -75,6 +104,7 @@ static UIImage *muteImage(BOOL muted) {
         SelectorKey: @"didPressMute:",
         UpdateImageOnVisibleKey: @YES
     });
+    %init(Mute);
     %init(Top);
     %init(Bottom);
 }
