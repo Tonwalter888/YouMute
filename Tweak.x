@@ -45,10 +45,7 @@ static UIImage *muteImage(BOOL muted) {
 %hook YTSingleVideoController
 
 - (void)setMuted:(BOOL)muted {
-    %orig;
-    if (muteButtonState()) {
-        [self setMuted:YES];
-    }
+    %orig(muteButtonState() ? YES : muted);
 }
 
 %end
