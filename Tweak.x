@@ -47,7 +47,7 @@ static UIImage *muteImage(BOOL muted) {
 - (void)setMuted:(BOOL)muted {
     %orig;
     if (muteButtonState()) {
-        [self setMuted:YES]
+        [self setMuted:YES];
     }
 }
 
