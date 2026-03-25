@@ -6,7 +6,6 @@
 #import <YouTubeHeader/YTSingleVideoController.h>
 
 #define TweakKey @"YouMute"
-#define YouMuteState @"GlobalMuteState"
 
 @interface YTMainAppControlsOverlayView (YouMute)
 - (void)didPressMute:(id)arg;
@@ -27,10 +26,6 @@ static BOOL isMutedBottom(YTInlinePlayerBarContainerView *self) {
     return [video isMuted];
 }
 
-static BOOL muteButtonState() {
-    return [[NSUserDefaults standardUserDefaults] boolForKey:@"YouMuteState"];
-}
-
 static void setMuteButtonState(BOOL state) {
     [[NSUserDefaults standardUserDefaults] setBool:state forKey:@"YouMuteState"];
     [[NSUserDefaults standardUserDefaults] synchronize];
@@ -39,18 +34,6 @@ static void setMuteButtonState(BOOL state) {
 static UIImage *muteImage(BOOL muted) {
     return [%c(QTMIcon) imageWithName:muted ? @"ic_volume_off" : @"ic_volume_up" color:[%c(YTColor) white1]];
 }
-
-%group Mute
-
-%hook YTSingleVideoController
-
-- (void)setMuted:(BOOL)muted {
-    %orig(muteButtonState() ? YES : muted);
-}
-
-%end
-
-%end
 
 %group Top
 
@@ -101,7 +84,6 @@ static UIImage *muteImage(BOOL muted) {
         SelectorKey: @"didPressMute:",
         UpdateImageOnVisibleKey: @YES
     });
-    %init(Mute);
     %init(Top);
     %init(Bottom);
 }
