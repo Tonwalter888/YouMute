@@ -27,26 +27,26 @@ static BOOL isMutedBottom(YTInlinePlayerBarContainerView *self) {
 }
 
 static BOOL muteButtonState() {
-    return gMuteState;
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"YouMuteState"];
 }
 
 static void setMuteButtonState(BOOL state) {
-    gMuteState = state;
     [[NSUserDefaults standardUserDefaults] setBool:state forKey:@"YouMuteState"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 static UIImage *muteImage(BOOL muted) {
     return [%c(QTMIcon) imageWithName:muted ? @"ic_volume_off" : @"ic_volume_up" color:[%c(YTColor) white1]];
 }
 
-static BOOL gMuteState = NO;
-
 %group Muted
 
 %hook YTSingleVideoController
 
 - (void)setMuted:(BOOL)muted {
-    %orig(gMuteState);
+    setMuteButtonState(muted);
+    %orig(muted);
 }
 
 %end
@@ -97,7 +97,6 @@ static BOOL gMuteState = NO;
 %end
 
 %ctor {
-    gMuteState = [[NSUserDefaults standardUserDefaults] boolForKey:@"YouMuteState"];
     initYTVideoOverlay(TweakKey, @{
         AccessibilityLabelKey: @"Mute",
         SelectorKey: @"didPressMute:",
