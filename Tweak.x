@@ -6,6 +6,7 @@
 #import <YouTubeHeader/YTSingleVideoController.h>
 
 #define TweakKey @"YouMute"
+#define KeepMutedKey @"YouMuteKeepMuted"
 
 @interface YTMainAppControlsOverlayView (YouMute)
 - (void)didPressMute:(id)arg;
@@ -26,9 +27,33 @@ static BOOL isMutedBottom(YTInlinePlayerBarContainerView *self) {
     return [video isMuted];
 }
 
+static BOOL shouldMute() {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:KeepMutedKey];
+}
+
+static BOOL keepMuted = NO;
+
 static UIImage *muteImage(BOOL muted) {
     return [%c(QTMIcon) imageWithName:muted ? @"ic_volume_off" : @"ic_volume_up" color:[%c(YTColor) white1]];
 }
+
+%group Muted
+
+%hook YTSingleVideoController
+
+- (void)setMuted:(BOOL)muted {
+    if (!shouldMute() || keepMuted) {
+        %orig;
+        return;
+    }
+    keepMuted = YES;
+    %orig(YES);
+    keepMuted = NO;
+}
+
+%end
+
+%end
 
 %group Top
 
@@ -42,6 +67,8 @@ static UIImage *muteImage(BOOL muted) {
 - (void)didPressMute:(id)arg {
     YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
     YTSingleVideoController *video = [c valueForKey:@"_currentSingleVideoObservable"];
+    BOOL setMuteStatus = ![video isMuted];
+    [[NSUserDefaults standardUserDefaults] setBool:setMuteStatus forKey:KeepMutedKey];
     [video setMuted:![video isMuted]];
     [self.overlayButtons[TweakKey] setImage:muteImage([video isMuted]) forState:UIControlStateNormal];
 }
@@ -61,6 +88,8 @@ static UIImage *muteImage(BOOL muted) {
 %new(v@:@)
 - (void)didPressMute:(id)arg {
     YTSingleVideoController *video = [self.delegate valueForKey:@"_currentSingleVideo"];
+    BOOL setMuteStatus = ![video isMuted];
+    [[NSUserDefaults standardUserDefaults] setBool:setMuteStatus forKey:KeepMutedKey];
     [video setMuted:![video isMuted]];
     [self.overlayButtons[TweakKey] setImage:muteImage([video isMuted]) forState:UIControlStateNormal];
 }
@@ -75,6 +104,7 @@ static UIImage *muteImage(BOOL muted) {
         SelectorKey: @"didPressMute:",
         UpdateImageOnVisibleKey: @YES
     });
+    %init(Muted);
     %init(Top);
     %init(Bottom);
 }
