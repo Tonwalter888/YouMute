@@ -91,7 +91,7 @@ static UIImage *muteImage(BOOL muted) {
     BOOL setMuteStatus = ![video isMuted];
     [[NSUserDefaults standardUserDefaults] setBool:setMuteStatus forKey:KeepMutedKey];
     [video setMuted:![video isMuted]];
-    [self.overlayButtons[TweakKey] setImage:muteImage(![video isMuted])) forState:UIControlStateNormal];
+    [self.overlayButtons[TweakKey] setImage:muteImage(![video isMuted]) forState:UIControlStateNormal];
 }
 
 %end
