@@ -31,8 +31,6 @@ static BOOL shouldMute() {
     return [[NSUserDefaults standardUserDefaults] boolForKey:KeepMutedKey];
 }
 
-static BOOL keepMuted = NO;
-
 static UIImage *muteImage(BOOL muted) {
     return [%c(QTMIcon) imageWithName:muted ? @"ic_volume_off" : @"ic_volume_up" color:[%c(YTColor) white1]];
 }
@@ -42,13 +40,17 @@ static UIImage *muteImage(BOOL muted) {
 %hook YTSingleVideoController
 
 - (void)setMuted:(BOOL)muted {
+    static BOOL keepMuted = NO;
     if (!shouldMute() || keepMuted) {
         %orig(muted);
         return;
     }
-    keepMuted = YES;
-    %orig(YES);
-    keepMuted = NO;
+    @try {
+        keepMuted = YES;
+        %orig(YES);
+    } @finally {
+        keepMuted = NO;
+    }
 }
 
 %end
