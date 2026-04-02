@@ -43,7 +43,7 @@ static UIImage *muteImage(BOOL muted) {
 
 - (void)setMuted:(BOOL)muted {
     if (!shouldMute() || keepMuted) {
-        %orig;
+        %orig(muted);
         return;
     }
     keepMuted = YES;
@@ -69,7 +69,7 @@ static UIImage *muteImage(BOOL muted) {
     YTSingleVideoController *video = [c valueForKey:@"_currentSingleVideoObservable"];
     BOOL setMuteStatus = ![video isMuted];
     [[NSUserDefaults standardUserDefaults] setBool:setMuteStatus forKey:KeepMutedKey];
-    [video setMuted:![video isMuted]];
+    [video setMuted:setMuteStatus];
     [self.overlayButtons[TweakKey] setImage:muteImage([video isMuted]) forState:UIControlStateNormal];
 }
 
@@ -90,7 +90,7 @@ static UIImage *muteImage(BOOL muted) {
     YTSingleVideoController *video = [self.delegate valueForKey:@"_currentSingleVideo"];
     BOOL setMuteStatus = ![video isMuted];
     [[NSUserDefaults standardUserDefaults] setBool:setMuteStatus forKey:KeepMutedKey];
-    [video setMuted:![video isMuted]];
+    [video setMuted:setMuteStatus];
     [self.overlayButtons[TweakKey] setImage:muteImage([video isMuted]) forState:UIControlStateNormal];
 }
 
