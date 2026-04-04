@@ -40,17 +40,7 @@ static UIImage *muteImage(BOOL muted) {
 %hook YTSingleVideoController
 
 - (void)setMuted:(BOOL)muted {
-    static BOOL keepMuted = NO;
-    if (!shouldMute() || keepMuted) {
-        %orig(muted);
-        return;
-    }
-    @try {
-        keepMuted = YES;
-        %orig(YES);
-    } @finally {
-        keepMuted = NO;
-    }
+    %orig(shouldMute());
 }
 
 %end
@@ -69,9 +59,9 @@ static UIImage *muteImage(BOOL muted) {
 - (void)didPressMute:(id)arg {
     YTMainAppVideoPlayerOverlayViewController *c = [self valueForKey:@"_eventsDelegate"];
     YTSingleVideoController *video = [c valueForKey:@"_currentSingleVideoObservable"];
-    BOOL setMuteStatus = ![video isMuted];
-    [[NSUserDefaults standardUserDefaults] setBool:setMuteStatus forKey:KeepMutedKey];
-    [video setMuted:setMuteStatus];
+    BOOL muteStatus = ![video isMuted];
+    [[NSUserDefaults standardUserDefaults] setBool:muteStatus forKey:KeepMutedKey];
+    [video setMuted:muteStatus];
     [self.overlayButtons[TweakKey] setImage:muteImage([video isMuted]) forState:UIControlStateNormal];
 }
 
@@ -90,9 +80,9 @@ static UIImage *muteImage(BOOL muted) {
 %new(v@:@)
 - (void)didPressMute:(id)arg {
     YTSingleVideoController *video = [self.delegate valueForKey:@"_currentSingleVideo"];
-    BOOL setMuteStatus = ![video isMuted];
-    [[NSUserDefaults standardUserDefaults] setBool:setMuteStatus forKey:KeepMutedKey];
-    [video setMuted:setMuteStatus];
+    BOOL muteStatus = ![video isMuted];
+    [[NSUserDefaults standardUserDefaults] setBool:muteStatus forKey:KeepMutedKey];
+    [video setMuted:muteStatus];
     [self.overlayButtons[TweakKey] setImage:muteImage([video isMuted]) forState:UIControlStateNormal];
 }
 
